@@ -469,22 +469,22 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     required List<double> opacityAnimationWeights,
   }) async {
     final direction = index > primary.target ? 1 : -1;
-    if (direction == -1) {
-      return;
-    }
     final itemPosition = primary.itemPositionsNotifier.itemPositions.value
         .firstWhereOrNull(
             (ItemPosition itemPosition) => itemPosition.index == index);
+
     if (itemPosition != null) {
       // Scroll directly.
       final localScrollAmount = itemPosition.itemLeadingEdge *
           primary.scrollController.position.viewportDimension;
-      await primary.scrollController.animateTo(
-          primary.scrollController.offset +
-              localScrollAmount -
-              alignment * primary.scrollController.position.viewportDimension,
-          duration: duration,
-          curve: curve);
+      final offset = primary.scrollController.offset +
+          localScrollAmount -
+          alignment * primary.scrollController.position.viewportDimension;
+      if (disableReverseAnimation && offset < 0) {
+        return;
+      }
+      await primary.scrollController
+          .animateTo(offset, duration: duration, curve: curve);
     } else {
       final scrollAmount = _screenScrollCount *
           primary.scrollController.position.viewportDimension;
