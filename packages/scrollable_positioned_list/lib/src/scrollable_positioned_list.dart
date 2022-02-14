@@ -229,6 +229,7 @@ class ItemScrollController {
   Future<void> scrollTo({
     required int index,
     double alignment = 0,
+    bool disableReverseAnimation = false,
     required Duration duration,
     Curve curve = Curves.linear,
     List<double> opacityAnimationWeights = const [40, 20, 40],
@@ -239,6 +240,7 @@ class ItemScrollController {
     return _scrollableListState!._scrollTo(
       index: index,
       alignment: alignment,
+      disableReverseAnimation: disableReverseAnimation,
       duration: duration,
       curve: curve,
       opacityAnimationWeights: opacityAnimationWeights,
@@ -426,6 +428,7 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
   Future<void> _scrollTo({
     required int index,
     required double alignment,
+    required bool disableReverseAnimation,
     required Duration duration,
     Curve curve = Curves.linear,
     required List<double> opacityAnimationWeights,
@@ -435,10 +438,11 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     }
     if (_isTransitioning) {
       _stopScroll(canceled: true);
-      SchedulerBinding.instance.addPostFrameCallback((_) {
+      SchedulerBinding.instance!.addPostFrameCallback((_) {
         _startScroll(
           index: index,
           alignment: alignment,
+          disableReverseAnimation: disableReverseAnimation,
           duration: duration,
           curve: curve,
           opacityAnimationWeights: opacityAnimationWeights,
@@ -448,6 +452,7 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
       await _startScroll(
         index: index,
         alignment: alignment,
+        disableReverseAnimation: disableReverseAnimation,
         duration: duration,
         curve: curve,
         opacityAnimationWeights: opacityAnimationWeights,
@@ -458,11 +463,15 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
   Future<void> _startScroll({
     required int index,
     required double alignment,
+    required bool disableReverseAnimation,
     required Duration duration,
     Curve curve = Curves.linear,
     required List<double> opacityAnimationWeights,
   }) async {
     final direction = index > primary.target ? 1 : -1;
+    if (direction == -1) {
+      return;
+    }
     final itemPosition = primary.itemPositionsNotifier.itemPositions.value
         .firstWhereOrNull(
             (ItemPosition itemPosition) => itemPosition.index == index);
@@ -482,7 +491,7 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
       final startCompleter = Completer<void>();
       final endCompleter = Completer<void>();
       startAnimationCallback = () {
-        SchedulerBinding.instance.addPostFrameCallback((_) {
+        SchedulerBinding.instance!.addPostFrameCallback((_) {
           startAnimationCallback = () {};
 
           opacity.parent = _opacityAnimation(opacityAnimationWeights).animate(
