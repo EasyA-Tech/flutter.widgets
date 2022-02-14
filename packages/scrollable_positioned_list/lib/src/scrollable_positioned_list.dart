@@ -469,7 +469,7 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     required List<double> opacityAnimationWeights,
   }) async {
     final direction = index > primary.target ? 1 : -1;
-    if (direction == -1) {
+    if (disableReverseAnimation && direction == -1) {
       return;
     }
     final itemPosition = primary.itemPositionsNotifier.itemPositions.value
