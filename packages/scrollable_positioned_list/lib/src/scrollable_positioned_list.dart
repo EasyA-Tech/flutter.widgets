@@ -229,7 +229,6 @@ class ItemScrollController {
   Future<void> scrollTo({
     required int index,
     double alignment = 0,
-    bool disableReverseAnimation = false,
     required Duration duration,
     Curve curve = Curves.linear,
     List<double> opacityAnimationWeights = const [40, 20, 40],
@@ -240,7 +239,6 @@ class ItemScrollController {
     return _scrollableListState!._scrollTo(
       index: index,
       alignment: alignment,
-      disableReverseAnimation: disableReverseAnimation,
       duration: duration,
       curve: curve,
       opacityAnimationWeights: opacityAnimationWeights,
@@ -428,7 +426,6 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
   Future<void> _scrollTo({
     required int index,
     required double alignment,
-    required bool disableReverseAnimation,
     required Duration duration,
     Curve curve = Curves.linear,
     required List<double> opacityAnimationWeights,
@@ -442,7 +439,6 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
         _startScroll(
           index: index,
           alignment: alignment,
-          disableReverseAnimation: disableReverseAnimation,
           duration: duration,
           curve: curve,
           opacityAnimationWeights: opacityAnimationWeights,
@@ -452,7 +448,6 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
       await _startScroll(
         index: index,
         alignment: alignment,
-        disableReverseAnimation: disableReverseAnimation,
         duration: duration,
         curve: curve,
         opacityAnimationWeights: opacityAnimationWeights,
@@ -463,7 +458,6 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
   Future<void> _startScroll({
     required int index,
     required double alignment,
-    required bool disableReverseAnimation,
     required Duration duration,
     Curve curve = Curves.linear,
     required List<double> opacityAnimationWeights,
@@ -472,19 +466,18 @@ class _ScrollablePositionedListState extends State<ScrollablePositionedList>
     final itemPosition = primary.itemPositionsNotifier.itemPositions.value
         .firstWhereOrNull(
             (ItemPosition itemPosition) => itemPosition.index == index);
-
     if (itemPosition != null) {
       // Scroll directly.
       final localScrollAmount = itemPosition.itemLeadingEdge *
           primary.scrollController.position.viewportDimension;
-      final offset = primary.scrollController.offset +
+      double offset = primary.scrollController.offset +
           localScrollAmount -
           alignment * primary.scrollController.position.viewportDimension;
-      if (disableReverseAnimation && offset < 0) {
-        return;
-      }
-      await primary.scrollController
-          .animateTo(offset, duration: duration, curve: curve);
+      await primary.scrollController.animateTo(
+        offset,
+        duration: duration,
+        curve: curve,
+      );
     } else {
       final scrollAmount = _screenScrollCount *
           primary.scrollController.position.viewportDimension;
